@@ -1,4 +1,4 @@
-generate-pb:
+pb:
 	@echo Generating protobufs: $(shell find proto -type f -name '*.proto')
 	@protoc -Iproto \
 		--go_out=. --go_opt=module=github.com/MarioScripts/vlr-api \
