@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package vlr.v1;
+
+option go_package = "github.com/MarioScripts/vlr-api/proto/gen/vlr/v1";
+
+import "google/protobuf/timestamp.proto";
+
+message Team {
+    int64 id = 1;
+    string name = 2;
+    int32 score = 3;
+    string icon = 4;
+}
+
+message Match {
+    int64 id = 1;
+    Team team_one = 2;
+    Team team_two = 3;
+    repeated string maps = 4;
+    string tournament_name = 5;
+    google.protobuf.Timestamp date = 6;
+}
+
+message MatchesResponse {
+    repeated Match matches = 1;
+}
+
+message MatchesRequest {
+    google.protobuf.Timestamp date = 1;
+}
+
+service Vlr {
+    // GetMatches
+    rpc Matches (MatchesRequest) returns (MatchesResponse);
+}
