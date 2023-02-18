@@ -18,8 +18,14 @@ message Match {
     Team team_one = 2;
     Team team_two = 3;
     repeated string maps = 4;
-    string tournament_name = 5;
-    google.protobuf.Timestamp date = 6;
+    MatchStatus match_status = 5; 
+    Tournament tournament = 6;
+    google.protobuf.Timestamp date = 7;
+}
+
+message Tournament {
+    int64 id = 1;
+    string name = 2;
 }
 
 message MatchesResponse {
@@ -27,10 +33,25 @@ message MatchesResponse {
 }
 
 message MatchesRequest {
-    google.protobuf.Timestamp date = 1;
+    MatchStatus match_status = 1;
+    google.protobuf.Timestamp date = 2;
+}
+
+message MatchRequest {
+    int64 id = 1;
+}
+
+enum MatchStatus {
+    NONE = 0;
+    NOT_STARTED = 1;
+    LIVE = 2;
+    FINISHED = 3;
 }
 
 service Vlr {
     // GetMatches
-    rpc Matches (MatchesRequest) returns (MatchesResponse);
+    rpc GetMatches (MatchesRequest) returns (MatchesResponse);
+
+    // GetMatch
+    rpc GetMatch (MatchRequest) returns (Match);
 }

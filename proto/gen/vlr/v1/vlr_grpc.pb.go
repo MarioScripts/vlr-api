@@ -23,7 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VlrClient interface {
 	// GetMatches
-	Matches(ctx context.Context, in *MatchesRequest, opts ...grpc.CallOption) (*MatchesResponse, error)
+	GetMatches(ctx context.Context, in *MatchesRequest, opts ...grpc.CallOption) (*MatchesResponse, error)
+	// GetMatch
+	GetMatch(ctx context.Context, in *MatchRequest, opts ...grpc.CallOption) (*Match, error)
 }
 
 type vlrClient struct {
@@ -34,9 +36,18 @@ func NewVlrClient(cc grpc.ClientConnInterface) VlrClient {
 	return &vlrClient{cc}
 }
 
-func (c *vlrClient) Matches(ctx context.Context, in *MatchesRequest, opts ...grpc.CallOption) (*MatchesResponse, error) {
+func (c *vlrClient) GetMatches(ctx context.Context, in *MatchesRequest, opts ...grpc.CallOption) (*MatchesResponse, error) {
 	out := new(MatchesResponse)
-	err := c.cc.Invoke(ctx, "/vlr.v1.Vlr/Matches", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/vlr.v1.Vlr/GetMatches", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *vlrClient) GetMatch(ctx context.Context, in *MatchRequest, opts ...grpc.CallOption) (*Match, error) {
+	out := new(Match)
+	err := c.cc.Invoke(ctx, "/vlr.v1.Vlr/GetMatch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +59,9 @@ func (c *vlrClient) Matches(ctx context.Context, in *MatchesRequest, opts ...grp
 // for forward compatibility
 type VlrServer interface {
 	// GetMatches
-	Matches(context.Context, *MatchesRequest) (*MatchesResponse, error)
+	GetMatches(context.Context, *MatchesRequest) (*MatchesResponse, error)
+	// GetMatch
+	GetMatch(context.Context, *MatchRequest) (*Match, error)
 	mustEmbedUnimplementedVlrServer()
 }
 
@@ -56,8 +69,11 @@ type VlrServer interface {
 type UnimplementedVlrServer struct {
 }
 
-func (UnimplementedVlrServer) Matches(context.Context, *MatchesRequest) (*MatchesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Matches not implemented")
+func (UnimplementedVlrServer) GetMatches(context.Context, *MatchesRequest) (*MatchesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMatches not implemented")
+}
+func (UnimplementedVlrServer) GetMatch(context.Context, *MatchRequest) (*Match, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMatch not implemented")
 }
 func (UnimplementedVlrServer) mustEmbedUnimplementedVlrServer() {}
 
@@ -72,20 +88,38 @@ func RegisterVlrServer(s grpc.ServiceRegistrar, srv VlrServer) {
 	s.RegisterService(&Vlr_ServiceDesc, srv)
 }
 
-func _Vlr_Matches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Vlr_GetMatches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MatchesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(VlrServer).Matches(ctx, in)
+		return srv.(VlrServer).GetMatches(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/vlr.v1.Vlr/Matches",
+		FullMethod: "/vlr.v1.Vlr/GetMatches",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VlrServer).Matches(ctx, req.(*MatchesRequest))
+		return srv.(VlrServer).GetMatches(ctx, req.(*MatchesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Vlr_GetMatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VlrServer).GetMatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vlr.v1.Vlr/GetMatch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VlrServer).GetMatch(ctx, req.(*MatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -98,8 +132,12 @@ var Vlr_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*VlrServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Matches",
-			Handler:    _Vlr_Matches_Handler,
+			MethodName: "GetMatches",
+			Handler:    _Vlr_GetMatches_Handler,
+		},
+		{
+			MethodName: "GetMatch",
+			Handler:    _Vlr_GetMatch_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
