@@ -35,6 +35,7 @@ message MatchesResponse {
 message MatchesRequest {
     MatchStatus match_status = 1;
     google.protobuf.Timestamp date = 2;
+    int64 tournament_id = 3;
 }
 
 message MatchRequest {

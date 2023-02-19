@@ -24,7 +24,7 @@ func getMatches(in *pb.MatchesRequest) []*pb.Match {
 		status := buildMatchStatus(e.ChildText(".match-item-eta  .ml-status"))
 
 		// Don't traverse to matches that don't match requested status
-		if in.MatchStatus != pb.MatchStatus_NONE && status != in.MatchStatus {
+		if (in.MatchStatus != pb.MatchStatus_NONE && status != in.MatchStatus) || (in.TournamentId != 0 && status == pb.MatchStatus_FINISHED && in.MatchStatus != pb.MatchStatus_FINISHED) {
 			return
 		}
 
@@ -45,7 +45,11 @@ func getMatches(in *pb.MatchesRequest) []*pb.Match {
 
 	})
 
-	c.Visit("https://www.vlr.gg/matches")
+	if in.TournamentId != 0 {
+		c.Visit(fmt.Sprintf("https://www.vlr.gg/event/matches/%d?series_id=all", in.TournamentId))
+	} else {
+		c.Visit("https://www.vlr.gg/matches")
+	}
 
 	c.Wait()
 
@@ -152,7 +156,7 @@ func buildMatchStatus(text string) pb.MatchStatus {
 
 	if upperText == "LIVE" {
 		return pb.MatchStatus_LIVE
-	} else if upperText == "FINAL" {
+	} else if upperText == "FINAL" || upperText == "COMPLETED" {
 		return pb.MatchStatus_FINISHED
 	}
 
