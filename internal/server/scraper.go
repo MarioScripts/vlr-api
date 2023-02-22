@@ -14,6 +14,8 @@ import (
 	"github.com/gocolly/colly"
 )
 
+var vlrBaseUrl = "https://www.vlr.gg"
+
 func getMatches(in *pb.MatchesRequest) []*pb.Match {
 	c := colly.NewCollector()
 	var matches = make([]*pb.Match, 0)
@@ -46,9 +48,9 @@ func getMatches(in *pb.MatchesRequest) []*pb.Match {
 	})
 
 	if in.TournamentId != 0 {
-		c.Visit(fmt.Sprintf("https://www.vlr.gg/event/matches/%d?series_id=all", in.TournamentId))
+		c.Visit(fmt.Sprintf("%s/event/matches/%d?series_id=all", vlrBaseUrl, in.TournamentId))
 	} else {
-		c.Visit("https://www.vlr.gg/matches")
+		c.Visit(fmt.Sprintf("%s/matches", vlrBaseUrl))
 	}
 
 	c.Wait()
@@ -57,7 +59,7 @@ func getMatches(in *pb.MatchesRequest) []*pb.Match {
 }
 
 func getMatchFromId(id int64) *pb.Match {
-	return getMatch(fmt.Sprintf("https://www.vlr.gg/%d", id))
+	return getMatch(fmt.Sprintf("%s/%d", vlrBaseUrl, id))
 }
 
 func getMatch(url string) *pb.Match {
