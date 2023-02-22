@@ -21,6 +21,7 @@ message Match {
     MatchStatus match_status = 5; 
     Tournament tournament = 6;
     google.protobuf.Timestamp date = 7;
+    int32 best_of = 8;
 }
 
 message Tournament {

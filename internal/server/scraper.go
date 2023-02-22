@@ -60,7 +60,6 @@ func getMatchFromId(id int64) *pb.Match {
 	return getMatch(fmt.Sprintf("https://www.vlr.gg/%d", id))
 }
 
-// TODO: Handle BO1s and BO5s
 func getMatch(url string) *pb.Match {
 	c := colly.NewCollector()
 	var match = &pb.Match{}
@@ -72,19 +71,26 @@ func getMatch(url string) *pb.Match {
 		// Id
 		id := getIdFromUrl(e.Request.URL.Path)
 
+		// Best of
+		bestOf := bestOfToInt(e.ChildText(".match-header-vs-score > .match-header-vs-note:nth-child(3)"))
+
 		// Status
 		rawStatus := e.ChildText(".match-header-vs-score > .match-header-vs-note:nth-child(1)")
 		status := buildMatchStatus(rawStatus)
 
 		// Maps
 		maps := make([]string, 0)
-		e.ForEach(".vm-stats-gamesnav > :not(div:nth-child(1)) > div", func(i int, e *colly.HTMLElement) {
-			m := strings.ReplaceAll(cleanText(e.Text), strconv.Itoa(i+1), "")
+		if bestOf == 1 {
+			maps = append(maps, cleanText(e.ChildText(".vm-stats-game-header .map > div:nth-child(1)")))
+		} else {
+			e.ForEach(".vm-stats-gamesnav > :not(div:nth-child(1)) > div", func(i int, e *colly.HTMLElement) {
+				m := strings.ReplaceAll(cleanText(e.Text), strconv.Itoa(i+1), "")
 
-			if m != "TBD" {
-				maps = append(maps, m)
-			}
-		})
+				if m != "TBD" {
+					maps = append(maps, m)
+				}
+			})
+		}
 
 		// Date
 		rawDate := e.ChildAttr(".match-header-date > .moment-tz-convert:nth-child(1)", "data-utc-ts")
@@ -109,6 +115,7 @@ func getMatch(url string) *pb.Match {
 				Id:   tId,
 				Name: tournament,
 			},
+			BestOf: bestOf,
 		}
 	})
 
@@ -161,6 +168,16 @@ func buildMatchStatus(text string) pb.MatchStatus {
 	}
 
 	return pb.MatchStatus_NOT_STARTED
+}
+
+func bestOfToInt(text string) int32 {
+	cleanedText := strings.ReplaceAll(text, "Bo", "")
+	num, err := strconv.Atoi(cleanedText)
+	if err != nil {
+		log.Fatalf("Could not convert best_of field to int %v\n", err)
+	}
+
+	return int32(num)
 }
 
 func getIdFromUrl(url string) int64 {
