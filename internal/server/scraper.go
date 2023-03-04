@@ -177,6 +177,7 @@ func bestOfToInt(text string) int32 {
 	num, err := strconv.Atoi(cleanedText)
 	if err != nil {
 		log.Fatalf("Could not convert best_of field to int %v\n", err)
+		return int32(3)
 	}
 
 	return int32(num)
