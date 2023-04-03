@@ -72,7 +72,7 @@ func getTeam(in *pb.TeamRequest) (*pb.TeamResponse, error) {
 	c.OnHTML(".col-container", func(e *colly.HTMLElement) {
 		icon := strings.ReplaceAll(e.ChildAttr(".team-header-logo img", "src"), "//", "https://")
 		name := e.ChildText(".team-header-name > h1.wf-title")
-		country := cleanText(e.ChildText(".team-header-country"))
+		country := strings.ToUpper(cleanText(e.ChildText(".team-header-country")))
 		players := getPlayers(in.GetId())
 
 		team = &pb.TeamResponse{
@@ -112,11 +112,25 @@ func getPlayer(pid int64) *pb.Player {
 	player := &pb.Player{}
 
 	c.OnHTML(".col-container", func(e *colly.HTMLElement) {
+		typeText := strings.ToUpper(e.ChildText(".player-summary-container-1 > .wf-card:nth-of-type(4) > a  span"))
+		var pType pb.PlayerType = pb.PlayerType_PLAYER
+		fmt.Println(typeText)
+		if typeText == "COACH" || typeText == "HEAD COACH" {
+			pType = pb.PlayerType_HEAD_COACH
+		} else if typeText == "ASSISTANT COACH" {
+			pType = pb.PlayerType_ASSISTANT_COACH
+		} else if typeText == "MANAGER" {
+			pType = pb.PlayerType_MANAGER
+		} else if typeText == "ANALYST" {
+			pType = pb.PlayerType_ANALYST
+		}
+
 		player = &pb.Player{
 			Id:      pid,
 			Name:    e.ChildText(".player-real-name"),
 			Handle:  e.ChildText(".wf-title"),
 			Country: cleanText(e.ChildText("div.player-header div.ge-text-light")),
+			Type:    pType,
 		}
 	})
 
@@ -281,7 +295,9 @@ func getIdFromUrl(url string) (int64, error) {
 	regexedString := strings.TrimSpace(strings.ReplaceAll(m1.FindString(url), "/", ""))
 	id, err := strconv.Atoi(regexedString)
 	if err != nil {
-		return -1, status.Error(codes.Internal, fmt.Sprintf("Failed to get id from url %s, %v\n", url, err))
+		errMsg := fmt.Sprintf("Failed to get id from url %s, %v\n", url, err)
+		fmt.Print(errMsg)
+		return -1, status.Error(codes.Internal, errMsg)
 	}
 
 	return int64(id), nil

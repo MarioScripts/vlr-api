@@ -76,6 +76,7 @@ enum PlayerType {
     HEAD_COACH = 1;
     ASSISTANT_COACH = 2;
     MANAGER = 3;
+    ANALYST = 4;
 }
 
 service Vlr {

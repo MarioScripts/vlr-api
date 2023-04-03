@@ -16,10 +16,7 @@ type Server struct {
 }
 
 func main() {
-	err2 := godotenv.Load()
-	if err2 != nil {
-		log.Fatalf("Error loading .env file %v\n", err2)
-	}
+	godotenv.Load()
 
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
