@@ -7,11 +7,16 @@ import (
 )
 
 func (s *Server) GetMatches(ctx context.Context, in *pb.MatchesRequest) (*pb.MatchesResponse, error) {
+	matches, err := getMatches(in)
 	return &pb.MatchesResponse{
-		Matches: getMatches(in),
-	}, nil
+		Matches: matches,
+	}, err
 }
 
 func (s *Server) GetMatch(ctx context.Context, in *pb.MatchRequest) (*pb.Match, error) {
-	return getMatchFromId(in.Id), nil
+	return getMatchFromId(in.Id)
+}
+
+func (s *Server) GetTeam(ctx context.Context, in *pb.TeamRequest) (*pb.TeamResponse, error) {
+	return getTeam(in)
 }

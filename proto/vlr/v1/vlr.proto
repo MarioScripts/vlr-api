@@ -6,7 +6,7 @@ option go_package = "github.com/MarioScripts/vlr-api/proto/gen/vlr/v1";
 
 import "google/protobuf/timestamp.proto";
 
-message Team {
+message MatchTeam {
     int64 id = 1;
     string name = 2;
     int32 score = 3;
@@ -15,8 +15,8 @@ message Team {
 
 message Match {
     int64 id = 1;
-    Team team_one = 2;
-    Team team_two = 3;
+    MatchTeam team_one = 2;
+    MatchTeam team_two = 3;
     repeated string maps = 4;
     MatchStatus match_status = 5; 
     Tournament tournament = 6;
@@ -43,11 +43,39 @@ message MatchRequest {
     int64 id = 1;
 }
 
+message TeamRequest {
+    int64 id = 1;
+}
+
+message Player {
+    int64 id = 1;
+    string handle = 2;
+    string name = 3;
+    repeated string teams = 4;
+    string country = 5;
+    PlayerType type = 6;
+}
+
+message TeamResponse {
+    int64 id = 1;
+    string name = 2;
+    string icon = 3;
+    string country = 4;
+    repeated Player players = 5;
+}
+
 enum MatchStatus {
     NONE = 0;
     NOT_STARTED = 1;
     LIVE = 2;
     FINISHED = 3;
+}
+
+enum PlayerType {
+    PLAYER = 0;
+    HEAD_COACH = 1;
+    ASSISTANT_COACH = 2;
+    MANAGER = 3;
 }
 
 service Vlr {
@@ -56,4 +84,7 @@ service Vlr {
 
     // GetMatch
     rpc GetMatch (MatchRequest) returns (Match);
+
+    // Get Team
+    rpc GetTeam (TeamRequest) returns (TeamResponse);
 }

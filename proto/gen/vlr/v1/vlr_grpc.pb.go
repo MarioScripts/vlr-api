@@ -26,6 +26,8 @@ type VlrClient interface {
 	GetMatches(ctx context.Context, in *MatchesRequest, opts ...grpc.CallOption) (*MatchesResponse, error)
 	// GetMatch
 	GetMatch(ctx context.Context, in *MatchRequest, opts ...grpc.CallOption) (*Match, error)
+	// Get Team
+	GetTeam(ctx context.Context, in *TeamRequest, opts ...grpc.CallOption) (*TeamResponse, error)
 }
 
 type vlrClient struct {
@@ -54,6 +56,15 @@ func (c *vlrClient) GetMatch(ctx context.Context, in *MatchRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *vlrClient) GetTeam(ctx context.Context, in *TeamRequest, opts ...grpc.CallOption) (*TeamResponse, error) {
+	out := new(TeamResponse)
+	err := c.cc.Invoke(ctx, "/vlr.v1.Vlr/GetTeam", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VlrServer is the server API for Vlr service.
 // All implementations must embed UnimplementedVlrServer
 // for forward compatibility
@@ -62,6 +73,8 @@ type VlrServer interface {
 	GetMatches(context.Context, *MatchesRequest) (*MatchesResponse, error)
 	// GetMatch
 	GetMatch(context.Context, *MatchRequest) (*Match, error)
+	// Get Team
+	GetTeam(context.Context, *TeamRequest) (*TeamResponse, error)
 	mustEmbedUnimplementedVlrServer()
 }
 
@@ -74,6 +87,9 @@ func (UnimplementedVlrServer) GetMatches(context.Context, *MatchesRequest) (*Mat
 }
 func (UnimplementedVlrServer) GetMatch(context.Context, *MatchRequest) (*Match, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMatch not implemented")
+}
+func (UnimplementedVlrServer) GetTeam(context.Context, *TeamRequest) (*TeamResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTeam not implemented")
 }
 func (UnimplementedVlrServer) mustEmbedUnimplementedVlrServer() {}
 
@@ -124,6 +140,24 @@ func _Vlr_GetMatch_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Vlr_GetTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VlrServer).GetTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vlr.v1.Vlr/GetTeam",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VlrServer).GetTeam(ctx, req.(*TeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Vlr_ServiceDesc is the grpc.ServiceDesc for Vlr service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -138,6 +172,10 @@ var Vlr_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMatch",
 			Handler:    _Vlr_GetMatch_Handler,
+		},
+		{
+			MethodName: "GetTeam",
+			Handler:    _Vlr_GetTeam_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
