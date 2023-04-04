@@ -64,7 +64,7 @@ func getMatchFromId(id int64) (*pb.Match, error) {
 	return getMatch(fmt.Sprintf("%s/%d", vlrBaseUrl, id))
 }
 
-func getTeam(in *pb.TeamRequest) (*pb.TeamResponse, error) {
+func getTeam(in *pb.IdRequest) (*pb.TeamResponse, error) {
 	c := colly.NewCollector()
 	var team = &pb.TeamResponse{}
 	var teamErr = error(nil)
@@ -72,7 +72,7 @@ func getTeam(in *pb.TeamRequest) (*pb.TeamResponse, error) {
 	c.OnHTML(".col-container", func(e *colly.HTMLElement) {
 		icon := strings.ReplaceAll(e.ChildAttr(".team-header-logo img", "src"), "//", "https://")
 		name := e.ChildText(".team-header-name > h1.wf-title")
-		country := cleanText(e.ChildText(".team-header-country"))
+		country := strings.ToUpper(cleanText(e.ChildText(".team-header-country")))
 		players := getPlayers(in.GetId())
 
 		team = &pb.TeamResponse{
@@ -99,7 +99,7 @@ func getPlayers(teamId int64) []*pb.Player {
 		if err != nil {
 			return
 		}
-		players = append(players, getPlayer(id))
+		players = append(players, getPlayer(id, false))
 	})
 
 	c.Visit(fmt.Sprintf("%v/team/%v", vlrBaseUrl, teamId))
@@ -107,18 +107,49 @@ func getPlayers(teamId int64) []*pb.Player {
 	return players
 }
 
-func getPlayer(pid int64) *pb.Player {
+func getPlayer(pid int64, showTeams bool) *pb.Player {
 	c := colly.NewCollector()
 	player := &pb.Player{}
+	var teams = make([]*pb.SimpleTeam, 0)
 
 	c.OnHTML(".col-container", func(e *colly.HTMLElement) {
+		typeText := strings.ToUpper(e.ChildText(".player-summary-container-1 > .wf-card:nth-of-type(4) > a  span"))
+		var pType pb.PlayerType = pb.PlayerType_PLAYER
+		fmt.Println(typeText)
+		if typeText == "COACH" || typeText == "HEAD COACH" {
+			pType = pb.PlayerType_HEAD_COACH
+		} else if typeText == "ASSISTANT COACH" {
+			pType = pb.PlayerType_ASSISTANT_COACH
+		} else if typeText == "MANAGER" {
+			pType = pb.PlayerType_MANAGER
+		} else if typeText == "ANALYST" {
+			pType = pb.PlayerType_ANALYST
+		}
+
 		player = &pb.Player{
 			Id:      pid,
 			Name:    e.ChildText(".player-real-name"),
 			Handle:  e.ChildText(".wf-title"),
 			Country: cleanText(e.ChildText("div.player-header div.ge-text-light")),
+			Type:    pType,
 		}
 	})
+
+	if showTeams == true {
+		c.OnHTML("a[href*=\"/team\"]", func(e *colly.HTMLElement) {
+			id, err := getIdFromUrl(e.Attr("href"))
+			if err == nil {
+				teams = append(teams, &pb.SimpleTeam{
+					Name: cleanText(e.ChildText("div:nth-child(2) > div:nth-child(1)")),
+					Id:   id,
+				})
+				player.Teams = teams
+
+			} else {
+				fmt.Println(err)
+			}
+		})
+	}
 
 	c.Visit(fmt.Sprintf("%v/player/%v", vlrBaseUrl, pid))
 	c.Wait()
@@ -249,7 +280,7 @@ func buildMatchTeam(e *colly.HTMLElement, num int) (*pb.MatchTeam, error) {
 }
 
 func cleanText(text string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(text, "\t", ""), "\n", "")
+	return strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(text, "\t", ""), "\n", ""))
 }
 
 func buildMatchStatus(text string) pb.MatchStatus {
@@ -281,7 +312,9 @@ func getIdFromUrl(url string) (int64, error) {
 	regexedString := strings.TrimSpace(strings.ReplaceAll(m1.FindString(url), "/", ""))
 	id, err := strconv.Atoi(regexedString)
 	if err != nil {
-		return -1, status.Error(codes.Internal, fmt.Sprintf("Failed to get id from url %s, %v\n", url, err))
+		errMsg := fmt.Sprintf("Failed to get id from url %s, %v\n", url, err)
+		fmt.Print(errMsg)
+		return -1, status.Error(codes.Internal, errMsg)
 	}
 
 	return int64(id), nil
