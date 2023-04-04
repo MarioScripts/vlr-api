@@ -39,19 +39,20 @@ message MatchesRequest {
     int64 tournament_id = 3;
 }
 
-message MatchRequest {
+message IdRequest {
     int64 id = 1;
 }
 
-message TeamRequest {
+message SimpleTeam {
     int64 id = 1;
+    string name = 2;
 }
 
 message Player {
     int64 id = 1;
     string handle = 2;
     string name = 3;
-    repeated string teams = 4;
+    repeated SimpleTeam teams = 4;
     string country = 5;
     PlayerType type = 6;
 }
@@ -84,8 +85,11 @@ service Vlr {
     rpc GetMatches (MatchesRequest) returns (MatchesResponse);
 
     // GetMatch
-    rpc GetMatch (MatchRequest) returns (Match);
+    rpc GetMatch (IdRequest) returns (Match);
 
     // Get Team
-    rpc GetTeam (TeamRequest) returns (TeamResponse);
+    rpc GetTeam (IdRequest) returns (TeamResponse);
+
+    // Get Player
+    rpc GetPlayer (IdRequest) returns (Player);
 }
