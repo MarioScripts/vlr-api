@@ -1,5 +1,4 @@
 MODULE := github.com/MarioScripts/vlr-api
-ECR_REPO := 991764619378.dkr.ecr.us-east-1.amazonaws.com/vlr-api
 TAG := latest
 
 pb:
@@ -13,7 +12,7 @@ build:
 	@echo Building Server
 	@go build -o bin/server ./internal/server
 
-build-docker:
+build-docker: get-ecr
 	@echo Building Docker Image
 	@docker build -t $(ECR_REPO):$(TAG) .
 
@@ -33,3 +32,7 @@ publish-go:
 
 run: pb build
 	@./bin/server
+
+get-ecr:
+	$(eval ECR_REPO := $(shell aws ecr describe-repositories --query "repositories[?repositoryName=='vlr-api'].repositoryUri" --output text))
+	@echo Found repo $(ECR_REPO)
