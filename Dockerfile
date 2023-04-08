@@ -11,5 +11,6 @@ RUN apk update && apk upgrade && apk add --no-cache make
 RUN make build
 
 ENV HOST 0.0.0.0
-EXPOSE 80
+ENV PORT 50051
+EXPOSE 50051
 CMD ["./bin/server"]
