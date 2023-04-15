@@ -13,4 +13,5 @@ RUN make build
 ENV HOST 0.0.0.0
 ENV PORT 50051
 EXPOSE 50051
+EXPOSE 8081
 CMD ["./bin/server"]
