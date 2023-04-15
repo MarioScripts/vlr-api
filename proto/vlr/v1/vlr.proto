@@ -5,6 +5,7 @@ package vlr.v1;
 option go_package = "github.com/MarioScripts/vlr-api/proto/gen/vlr/v1";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 message MatchTeam {
     int64 id = 1;
@@ -82,14 +83,22 @@ enum PlayerType {
 
 service Vlr {
     // GetMatches
-    rpc GetMatches (MatchesRequest) returns (MatchesResponse);
+    rpc GetMatches (MatchesRequest) returns (MatchesResponse) {
+        option (google.api.http) = { get: "/vlr/matches" };
+    };
 
     // GetMatch
-    rpc GetMatch (IdRequest) returns (Match);
+    rpc GetMatch (IdRequest) returns (Match) {
+        option (google.api.http) = { get: "/vlr/match/{id}" };
+    };
 
     // Get Team
-    rpc GetTeam (IdRequest) returns (TeamResponse);
+    rpc GetTeam (IdRequest) returns (TeamResponse) {
+        option (google.api.http) = { get: "/vlr/team/{id}" };
+    };
 
     // Get Player
-    rpc GetPlayer (IdRequest) returns (Player);
+    rpc GetPlayer (IdRequest) returns (Player) {
+        option (google.api.http) = { get: "/vlr/player/{id}" };
+    };
 }

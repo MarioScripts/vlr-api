@@ -2,11 +2,13 @@ MODULE := github.com/MarioScripts/vlr-api
 TAG := latest
 
 pb:
-	@echo Generating protobufs: $(shell find proto -type f -name '*.proto')
+	@echo Generating protobufs: $(shell find proto/vlr -type f -name '*.proto')
 	@protoc -Iproto \
 		--go_out=. --go_opt=module=$(MODULE) \
 		--go-grpc_out=. --go-grpc_opt=module=$(MODULE) \
-		--proto_path=proto $(shell find proto -type f -name '*.proto')
+		--grpc-gateway_out=. --grpc-gateway_opt=module=$(MODULE) \
+		--grpc-gateway_opt generate_unbound_methods=true \
+		--proto_path=proto $(shell find proto/vlr -type f -name '*.proto')
 
 build:
 	@echo Building Server
