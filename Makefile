@@ -38,3 +38,5 @@ run: pb build
 get-ecr:
 	$(eval ECR_REPO := $(shell aws ecr describe-repositories --query "repositories[?repositoryName=='vlr-api'].repositoryUri" --output text))
 	@echo Found repo $(ECR_REPO)
+	@echo Logging into ECR/Docker
+	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(ECR_REPO)
